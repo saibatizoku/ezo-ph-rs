@@ -246,4 +246,44 @@ mod tests {
         assert_eq!(cmd.delay, None);
         assert_eq!(cmd.response, None);
     }
+
+    #[test]
+    fn build_command_calibration_mid() {
+        let cmd = CalibrationMid(7.00).build();
+        assert_eq!(cmd.command, "Cal,mid,7.00\0");
+        assert_eq!(cmd.delay, Some(900));
+        assert_eq!(cmd.response, Some(CommandResponse::Ack));
+    }
+
+    #[test]
+    fn build_command_calibration_low() {
+        let cmd = CalibrationLow(4.).build();
+        assert_eq!(cmd.command, "Cal,low,4.00\0");
+        assert_eq!(cmd.delay, Some(900));
+        assert_eq!(cmd.response, Some(CommandResponse::Ack));
+    }
+
+    #[test]
+    fn build_command_calibration_high() {
+        let cmd = CalibrationHigh(10.).build();
+        assert_eq!(cmd.command, "Cal,high,10.0\0");
+        assert_eq!(cmd.delay, Some(900));
+        assert_eq!(cmd.response, Some(CommandResponse::Ack));
+    }
+
+    #[test]
+    fn build_command_calibration_clear() {
+        let cmd = CalibrationClear.build();
+        assert_eq!(cmd.command, "Cal,clear\0");
+        assert_eq!(cmd.delay, Some(300));
+        assert_eq!(cmd.response, Some(CommandResponse::Ack));
+    }
+
+    #[test]
+    fn build_command_calibration_state() {
+        let cmd = CalibrationState.build();
+        assert_eq!(cmd.command, "Cal,?\0");
+        assert_eq!(cmd.delay, Some(300));
+        assert_eq!(cmd.response, Some(CommandResponse::CalibrationState));
+    }
 }
