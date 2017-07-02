@@ -221,9 +221,23 @@ impl I2cCommand for PhCommand {
                     .set_response(CommandResponse::CalibrationState)
                     .finish()
             }
-            Export => unimplemented!(),
-            ExportInfo => unimplemented!(),
-            Import(ref String) => unimplemented!(),
+            Export => {
+                opts.set_command("Export\0".to_string())
+                    .set_delay(300)
+                    .set_response(CommandResponse::Export)
+                    .finish()
+            }
+            ExportInfo => {
+                opts.set_command("Export,?\0".to_string())
+                    .set_delay(300)
+                    .set_response(CommandResponse::ExportInfo)
+                    .finish()
+            }
+            Import(ref calib) => {
+                opts.set_command(format!("Import,{}\0", calib))
+                    .set_delay(300)
+                    .finish()
+            }
             Factory => unimplemented!(),
             Find => unimplemented!(),
             DeviceInformation => unimplemented!(),
