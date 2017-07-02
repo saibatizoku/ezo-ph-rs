@@ -409,6 +409,14 @@ mod tests {
     }
 
     #[test]
+    fn build_command_slope() {
+        let cmd = Slope.build();
+        assert_eq!(cmd.command, "Slope,?\0");
+        assert_eq!(cmd.delay, Some(300));
+        assert_eq!(cmd.response, Some(CommandResponse::Ack));
+    }
+
+    #[test]
     fn build_command_device_status() {
         let cmd = Status.build();
         assert_eq!(cmd.command, "Status\0");
