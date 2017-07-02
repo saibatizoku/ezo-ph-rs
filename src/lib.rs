@@ -286,4 +286,29 @@ mod tests {
         assert_eq!(cmd.delay, Some(300));
         assert_eq!(cmd.response, Some(CommandResponse::CalibrationState));
     }
+
+    #[test]
+    fn build_command_export() {
+        let cmd = Export.build();
+        assert_eq!(cmd.command, "Export\0");
+        assert_eq!(cmd.delay, Some(300));
+        assert_eq!(cmd.response, Some(CommandResponse::Export));
+    }
+
+    #[test]
+    fn build_command_export_info() {
+        let cmd = ExportInfo.build();
+        assert_eq!(cmd.command, "Export,?\0");
+        assert_eq!(cmd.delay, Some(300));
+        assert_eq!(cmd.response, Some(CommandResponse::ExportInfo));
+    }
+
+    #[test]
+    fn build_command_import() {
+        let calibration_string = "ABCDEFGHIJKLMNO".to_string();
+        let cmd = Import(calibration_string).build();
+        assert_eq!(cmd.command, "Import,ABCDEFGHIJKLMNO\0");
+        assert_eq!(cmd.delay, Some(300));
+        assert_eq!(cmd.response, None);
+    }
 }
