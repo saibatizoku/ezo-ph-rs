@@ -274,9 +274,24 @@ impl I2cCommand for PhCommand {
                     .set_response(CommandResponse::LedState)
                     .finish()
             }
-            ProtocolLockDisable => unimplemented!(),
-            ProtocolLockEnable => unimplemented!(),
-            ProtocolLockState => unimplemented!(),
+            ProtocolLockEnable => {
+                opts.set_command("Plock,1\0".to_string())
+                    .set_delay(300)
+                    .set_response(CommandResponse::Ack)
+                    .finish()
+            }
+            ProtocolLockDisable => {
+                opts.set_command("Plock,0\0".to_string())
+                    .set_delay(300)
+                    .set_response(CommandResponse::Ack)
+                    .finish()
+            }
+            ProtocolLockState => {
+                opts.set_command("Plock,?\0".to_string())
+                    .set_delay(300)
+                    .set_response(CommandResponse::ProtocolLockState)
+                    .finish()
+            }
             Reading => unimplemented!(),
             Sleep => unimplemented!(),
             Slope => unimplemented!(),
