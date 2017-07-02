@@ -399,4 +399,12 @@ mod tests {
         assert_eq!(cmd.delay, Some(900));
         assert_eq!(cmd.response, Some(CommandResponse::Reading));
     }
+
+    #[test]
+    fn build_command_sleep_mode() {
+        let cmd = Sleep.build();
+        assert_eq!(cmd.command, "Sleep\0");
+        assert_eq!(cmd.delay, None);
+        assert_eq!(cmd.response, None);
+    }
 }
