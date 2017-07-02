@@ -191,11 +191,36 @@ impl I2cCommand for PhCommand {
                 };
                 opts.set_command(format!("Baud,{}\0", rate)).finish()
             }
-            CalibrationClear => unimplemented!(),
-            CalibrationMid(calib) => unimplemented!(),
-            CalibrationLow(calib) => unimplemented!(),
-            CalibrationHigh(calib) => unimplemented!(),
-            CalibrationState => unimplemented!(),
+            CalibrationMid(cal) => {
+                opts.set_command(format!("Cal,mid,{:.*}\0", 2, cal))
+                    .set_delay(900)
+                    .set_response(CommandResponse::Ack)
+                    .finish()
+            }
+            CalibrationLow(cal) => {
+                opts.set_command(format!("Cal,low,{:.*}\0", 2, cal))
+                    .set_delay(900)
+                    .set_response(CommandResponse::Ack)
+                    .finish()
+            }
+            CalibrationHigh(cal) => {
+                opts.set_command(format!("Cal,high,{:.*}\0", 2, cal))
+                    .set_delay(900)
+                    .set_response(CommandResponse::Ack)
+                    .finish()
+            }
+            CalibrationClear => {
+                opts.set_command("Cal,clear\0".to_string())
+                    .set_delay(300)
+                    .set_response(CommandResponse::Ack)
+                    .finish()
+            }
+            CalibrationState => {
+                opts.set_command("Cal,?\0".to_string())
+                    .set_delay(300)
+                    .set_response(CommandResponse::CalibrationState)
+                    .finish()
+            }
             Export => unimplemented!(),
             ExportInfo => unimplemented!(),
             Import(ref String) => unimplemented!(),
