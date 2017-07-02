@@ -245,8 +245,17 @@ impl I2cCommand for PhCommand {
                     .set_response(CommandResponse::Ack)
                     .finish()
             }
-            DeviceInformation => unimplemented!(),
-            DeviceAddress(addr) => unimplemented!(),
+            DeviceInformation => {
+                opts.set_command("I\0".to_string())
+                    .set_delay(300)
+                    .set_response(CommandResponse::DeviceInformation)
+                    .finish()
+            }
+            DeviceAddress(addr) => {
+                opts.set_command(format!("I2C,{}\0", addr))
+                    .set_delay(300)
+                    .finish()
+            }
             LedOn => unimplemented!(),
             LedOff => unimplemented!(),
             LedState => unimplemented!(),
