@@ -292,7 +292,12 @@ impl I2cCommand for PhCommand {
                     .set_response(CommandResponse::ProtocolLockState)
                     .finish()
             }
-            Reading => unimplemented!(),
+            Reading => {
+                opts.set_command("R\0".to_string())
+                    .set_delay(900)
+                    .set_response(CommandResponse::Reading)
+                    .finish()
+            }
             Sleep => unimplemented!(),
             Slope => unimplemented!(),
             Status => unimplemented!(),
