@@ -415,4 +415,20 @@ mod tests {
         assert_eq!(cmd.delay, Some(300));
         assert_eq!(cmd.response, Some(CommandResponse::Status));
     }
+
+    #[test]
+    fn build_command_temperature_compensation() {
+        let cmd = TemperatureCompensation(19.5).build();
+        assert_eq!(cmd.command, "T,19.5\0");
+        assert_eq!(cmd.delay, Some(300));
+        assert_eq!(cmd.response, Some(CommandResponse::Ack));
+    }
+
+    #[test]
+    fn build_command_temperature_compensation_value() {
+        let cmd = TemperatureCompensationValue.build();
+        assert_eq!(cmd.command, "T,?\0");
+        assert_eq!(cmd.delay, Some(300));
+        assert_eq!(cmd.response, Some(CommandResponse::CompensationValue));
+    }
 }
