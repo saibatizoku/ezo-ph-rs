@@ -96,7 +96,6 @@ pub enum CommandResponse {
     Export,
     ExportInfo,
     LedState,
-    OutputState,
     ProtocolLockState,
     Reading,
     Slope,
