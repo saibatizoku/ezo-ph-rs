@@ -294,8 +294,8 @@ mod tests {
 
     #[test]
     fn build_command_calibration_high() {
-        let cmd = CalibrationHigh(10.).build();
-        assert_eq!(cmd.command, "Cal,high,10.0\0");
+        let cmd = CalibrationHigh(10.056).build();
+        assert_eq!(cmd.command, "Cal,high,10.06\0");
         assert_eq!(cmd.delay, Some(900));
         assert_eq!(cmd.response, Some(CommandResponse::Ack));
     }
@@ -442,7 +442,7 @@ mod tests {
         let cmd = Slope.build();
         assert_eq!(cmd.command, "Slope,?\0");
         assert_eq!(cmd.delay, Some(300));
-        assert_eq!(cmd.response, Some(CommandResponse::Ack));
+        assert_eq!(cmd.response, Some(CommandResponse::Slope));
     }
 
     #[test]
