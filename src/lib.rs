@@ -41,9 +41,10 @@ pub enum PhCommand {
     Baud(BpsRate),
     // 'Cal' command
     CalibrationClear,
-    CalibrationSingleMidPoint(f64),
-    CalibrationThreePointAtHigh(f64),
-    CalibrationTwoPointAtLow(f64),
+    CalibrationMid(f64),
+    CalibrationLow(f64),
+    CalibrationHigh(f64),
+    CalibrationState,
     // 'Export/Import' command
     Export,
     ExportInfo,
@@ -63,7 +64,7 @@ pub enum PhCommand {
     // 'Plock' command
     ProtocolLockDisable,
     ProtocolLockEnable,
-    ProtocolLockStatus,
+    ProtocolLockState,
     // 'R' command
     Reading,
     // 'Sleep' command
@@ -73,8 +74,8 @@ pub enum PhCommand {
     // 'Status' command
     Status,
     // 'T' command
-    TemperatureCompensation,
-    TemperatureCompensatedValue,
+    TemperatureCompensation(f64),
+    TemperatureCompensationValue,
 }
 
 /// Command-related parameters used to build I2C write/read interactions.
@@ -97,8 +98,8 @@ pub enum CommandResponse {
     LedState,
     OutputState,
     ProtocolLockState,
-    ProbeTypeState,
     Reading,
+    Slope,
     Status,
 }
 
@@ -174,7 +175,35 @@ impl CommandBuilder for CommandOptions {
 
 impl I2cCommand for PhCommand {
     fn build(&self) -> CommandOptions {
-        unimplemented!();
+        use self::PhCommand::*;
+        let mut opts = CommandOptions::default();
+        match *self {
+            Baud(ref BpsRate) => unimplemented!(),
+            CalibrationClear => unimplemented!(),
+            CalibrationMid(calib) => unimplemented!(),
+            CalibrationLow(calib) => unimplemented!(),
+            CalibrationHigh(calib) => unimplemented!(),
+            CalibrationState => unimplemented!(),
+            Export => unimplemented!(),
+            ExportInfo => unimplemented!(),
+            Import(ref String) => unimplemented!(),
+            Factory => unimplemented!(),
+            Find => unimplemented!(),
+            DeviceInformation => unimplemented!(),
+            DeviceAddress(addr) => unimplemented!(),
+            LedOn => unimplemented!(),
+            LedOff => unimplemented!(),
+            LedState => unimplemented!(),
+            ProtocolLockDisable => unimplemented!(),
+            ProtocolLockEnable => unimplemented!(),
+            ProtocolLockState => unimplemented!(),
+            Reading => unimplemented!(),
+            Sleep => unimplemented!(),
+            Slope => unimplemented!(),
+            Status => unimplemented!(),
+            TemperatureCompensation(temp) => unimplemented!(),
+            TemperatureCompensationValue => unimplemented!(),
+        }
     }
 }
 
