@@ -391,4 +391,12 @@ mod tests {
         assert_eq!(cmd.delay, Some(300));
         assert_eq!(cmd.response, Some(CommandResponse::ProtocolLockState));
     }
+
+    #[test]
+    fn build_command_reading() {
+        let cmd = Reading.build();
+        assert_eq!(cmd.command, "R\0");
+        assert_eq!(cmd.delay, Some(900));
+        assert_eq!(cmd.response, Some(CommandResponse::Reading));
+    }
 }
