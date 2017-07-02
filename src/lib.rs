@@ -305,7 +305,12 @@ impl I2cCommand for PhCommand {
                     .set_response(CommandResponse::Slope)
                     .finish()
             }
-            Status => unimplemented!(),
+            Status => {
+                opts.set_command("Status\0".to_string())
+                    .set_delay(300)
+                    .set_response(CommandResponse::Status)
+                    .finish()
+            }
             TemperatureCompensation(temp) => unimplemented!(),
             TemperatureCompensationValue => unimplemented!(),
         }
