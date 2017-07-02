@@ -238,8 +238,13 @@ impl I2cCommand for PhCommand {
                     .set_delay(300)
                     .finish()
             }
-            Factory => unimplemented!(),
-            Find => unimplemented!(),
+            Factory => opts.set_command("Factory\0".to_string()).finish(),
+            Find => {
+                opts.set_command("F\0".to_string())
+                    .set_delay(300)
+                    .set_response(CommandResponse::Ack)
+                    .finish()
+            }
             DeviceInformation => unimplemented!(),
             DeviceAddress(addr) => unimplemented!(),
             LedOn => unimplemented!(),
