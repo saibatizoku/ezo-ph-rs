@@ -298,7 +298,7 @@ impl I2cCommand for PhCommand {
                     .set_response(CommandResponse::Reading)
                     .finish()
             }
-            Sleep => unimplemented!(),
+            Sleep => opts.set_command("Sleep\0".to_string()).finish(),
             Slope => unimplemented!(),
             Status => unimplemented!(),
             TemperatureCompensation(temp) => unimplemented!(),
