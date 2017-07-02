@@ -36,6 +36,7 @@ pub enum BpsRate {
     Bps115200 = 115200,
 }
 
+/// Commands for interacting with the PH EZO chip.
 pub enum PhCommand {
     // 'Baud' command
     Baud(BpsRate),
