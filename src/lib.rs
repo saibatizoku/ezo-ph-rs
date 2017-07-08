@@ -8,10 +8,12 @@ extern crate ezo_common;
 extern crate i2cdev;
 
 /// Use error-chain.
-pub mod errors { error_chain! {} }
+pub mod errors {
+    error_chain!{}
+}
 
 use errors::*;
-use ezo_common::{BpsRate};
+use ezo_common::BpsRate;
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
 use std::thread;
