@@ -222,4 +222,11 @@ mod tests {
         assert_eq!(cmd.get_command_string(), "Slope,?\0");
         assert_eq!(cmd.get_delay(), 300);
     }
+
+    #[test]
+    fn build_command_device_status() {
+        let cmd = Status;
+        assert_eq!(cmd.get_command_string(), "Status\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
 }
