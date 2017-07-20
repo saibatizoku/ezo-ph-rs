@@ -205,6 +205,13 @@ mod tests {
     fn build_command_reading() {
         let cmd = Reading;
         assert_eq!(cmd.get_command_string(), "R\0");
-        assert_eq!(cmd.get_delay(), 600);
+        assert_eq!(cmd.get_delay(), 900);
+    }
+
+    #[test]
+    fn build_command_sleep_mode() {
+        let cmd = Sleep;
+        assert_eq!(cmd.get_command_string(), "Sleep\0");
+        assert_eq!(cmd.get_delay(), 0);
     }
 }
