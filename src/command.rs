@@ -214,4 +214,12 @@ mod tests {
         assert_eq!(cmd.get_command_string(), "Sleep\0");
         assert_eq!(cmd.get_delay(), 0);
     }
+
+    #[test]
+    fn build_command_slope() {
+        let cmd = Slope.build();
+        assert_eq!(cmd.command, "Slope,?\0");
+        assert_eq!(cmd.get_command_string(), "Slope,?\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
 }
