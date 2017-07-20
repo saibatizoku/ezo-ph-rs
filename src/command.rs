@@ -130,4 +130,18 @@ mod tests {
         assert_eq!(cmd.get_command_string(), "Import,ABCDEFGHIJKLMNO\0");
         assert_eq!(cmd.get_delay(), 300);
     }
+
+    #[test]
+    fn build_command_factory() {
+        let cmd = Factory;
+        assert_eq!(cmd.get_command_string(), "Factory\0");
+        assert_eq!(cmd.get_delay(), 0);
+    }
+
+    #[test]
+    fn build_command_find() {
+        let cmd = Find;
+        assert_eq!(cmd.get_command_string(), "F\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
 }
