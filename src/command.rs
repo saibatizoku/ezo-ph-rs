@@ -73,4 +73,39 @@ mod tests {
         assert_eq!(cmd.get_command_string(), "Baud,115200\0");
         assert_eq!(cmd.get_delay(), 0);
     }
+
+    #[test]
+    fn build_command_calibration_mid() {
+        let cmd = CalibrationMid(7.00);
+        assert_eq!(cmd.get_command_string(), "Cal,mid,7.00\0");
+        assert_eq!(cmd.get_delay(), 900);
+    }
+
+    #[test]
+    fn build_command_calibration_low() {
+        let cmd = CalibrationLow(4.);
+        assert_eq!(cmd.get_command_string(), "Cal,low,4.00\0");
+        assert_eq!(cmd.get_delay(), 900);
+    }
+
+    #[test]
+    fn build_command_calibration_high() {
+        let cmd = CalibrationHigh(10.056);
+        assert_eq!(cmd.get_command_string(), "Cal,high,10.06\0");
+        assert_eq!(cmd.get_delay(), 900);
+    }
+
+    #[test]
+    fn build_command_calibration_clear() {
+        let cmd = CalibrationClear;
+        assert_eq!(cmd.get_command_string(), "Cal,clear\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn build_command_calibration_state() {
+        let cmd = CalibrationState;
+        assert_eq!(cmd.get_command_string(), "Cal,?\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
 }
