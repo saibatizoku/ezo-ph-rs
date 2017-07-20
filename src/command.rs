@@ -4,14 +4,32 @@ use std::thread;
 use std::time::Duration;
 
 use errors::*;
+use response::{
+    CalibrationStatus,
+    CompensationValue,
+    DeviceInfo,
+    DeviceStatus,
+    Exported,
+    ExportedInfo,
+    LedStatus,
+    ProbeSlope,
+    ProtocolLockStatus,
+    SensorReading,
+};
 
-use ezo_common::BpsRate;
+use ezo_common::{
+    BpsRate,
+    ResponseCode,
+    response_code,
+    string_from_response_data,
+    write_to_ezo,
+};
 
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;
 
 /// Maximum ascii-character response size + 2
-pub const MAX_RESPONSE_LENGTH: usize = 401;
+pub const MAX_DATA: usize = 401;
 
 /// I2C command for the EZO chip.
 pub trait Command {
@@ -22,6 +40,140 @@ pub trait Command {
     fn run(&self, dev: &mut LinuxI2CDevice) -> Result<Self::Response>;
 }
 
+define_command! {
+    doc: "`Baud,n` command, where `n` is a variant belonging to `BpsRate`.",
+    cmd: Baud(BpsRate), { format!("Baud,{}\0", cmd.parse() ) }, 0
+}
+
+define_command! {
+    doc: "`Cal,mid,t` command, where `t` is of type `f64`.",
+    cmd: CalibrationMid(f64), { format!("Cal,mid,{:.*}\0", 2, cmd) }, 900, Ack
+}
+
+define_command! {
+    doc: "`Cal,low,t` command, where `t` is of type `f64`.",
+    cmd: CalibrationLow(f64), { format!("Cal,low,{:.*}\0", 2, cmd) }, 900, Ack
+}
+
+define_command! {
+    doc: "`Cal,high,t` command, where `t` is of type `f64`.",
+    cmd: CalibrationHigh(f64), { format!("Cal,high,{:.*}\0", 2, cmd) }, 900, Ack
+}
+
+define_command! {
+    doc: "`Cal,clear` command.",
+    CalibrationClear, { "Cal,clear\0".to_string() }, 300, Ack
+}
+
+define_command! {
+    doc: "`Cal,?` command. Returns a `CalibrationStatus` response.",
+    CalibrationState, { "Cal,?\0".to_string() }, 300,
+    resp: CalibrationStatus, { CalibrationStatus::parse(&resp) }
+}
+
+define_command! {
+    doc: "`Export` command.",
+    Export, { "Export\0".to_string() }, 300,
+    resp: Exported, { Exported::parse(&resp) }
+}
+
+define_command! {
+    doc: "`ExportInfo` command.",
+    ExportInfo, { "Export,?\0".to_string() }, 300,
+    resp: ExportedInfo, { ExportedInfo::parse(&resp) }
+}
+
+define_command! {
+    doc: "`Import,n` command, where `n` is of type `String`.",
+    cmd: Import(String), { format!("Import,{}\0", cmd) }, 300, Ack
+}
+
+define_command! {
+    doc: "`Factory` command.",
+    Factory, { "Factory\0".to_string() }, 0
+}
+
+define_command! {
+    doc: "`Find` command.",
+    Find, { "F\0".to_string() }, 300
+}
+
+define_command! {
+    doc: "`I2C,n` command, where `n` is of type `u64`.",
+    cmd: DeviceAddress(u16), { format!("I2C,{}\0", cmd) }, 300
+}
+
+define_command! {
+    doc: "`I` command.",
+    DeviceInformation, { "I\0".to_string() }, 300,
+    resp: DeviceInfo, { DeviceInfo::parse(&resp) }
+}
+
+define_command! {
+    doc: "`L,1` command.",
+    LedOn, { "L,1\0".to_string() }, 300, Ack
+}
+
+define_command! {
+    doc: "`L,0` command.",
+    LedOff, { "L,0\0".to_string() }, 300, Ack
+}
+
+define_command! {
+    doc: "`L,?` command.",
+    LedState, { "L,?\0".to_string() }, 300,
+    resp: LedStatus, { LedStatus::parse(&resp) }
+}
+
+define_command! {
+    doc: "`Plock,1` command.",
+    ProtocolLockEnable, { "Plock,1\0".to_string() }, 300, Ack
+}
+
+define_command! {
+    doc: "`Plock,0` command.",
+    ProtocolLockDisable, { "Plock,0\0".to_string() }, 300, Ack
+}
+
+define_command! {
+    doc: "`Plock,?` command. Returns a `ProtocolLockStatus` response.",
+    ProtocolLockState, { "Plock,?\0".to_string() }, 300,
+    resp: ProtocolLockStatus, { ProtocolLockStatus::parse(&resp) }
+}
+
+define_command! {
+    doc: "`R` command. Returns a `SensorReading` response.",
+    Reading, { "R\0".to_string() }, 900,
+    resp: SensorReading, { SensorReading::parse(&resp) }
+}
+
+define_command! {
+    doc: "`Slope,?` command. Returns a `ProbeSlope` response.",
+    Slope, { "Slope,?\0".to_string() }, 300,
+    resp: ProbeSlope, { ProbeSlope::parse(&resp) }
+}
+
+define_command! {
+    doc: "`Status` command. Returns a `DeviceStatus` response.",
+    Status, { "Status\0".to_string() }, 300,
+    resp: DeviceStatus, { DeviceStatus::parse(&resp) }
+}
+
+define_command! {
+    doc: "`Sleep` command.",
+    Sleep, { "Sleep\0".to_string() }, 0
+}
+
+define_command! {
+    doc: "`T,t` command, where `t` is of type `f64`.",
+    cmd: TemperatureCompensation(f64), { format!("T,{:.*}\0", 3, cmd) }, 300, Ack
+}
+
+define_command! {
+    doc: "`T,?` command. Returns a `CompensationValue` response.",
+    CompensatedTemperatureValue, { "T,?\0".to_string() }, 300,
+    resp: CompensationValue, { CompensationValue::parse(&resp) }
+}
 
 #[cfg(test)]
 mod tests {
@@ -226,8 +378,7 @@ mod tests {
 
     #[test]
     fn build_command_slope() {
-        let cmd = Slope.build();
-        assert_eq!(cmd.command, "Slope,?\0");
+        let cmd = Slope;
         assert_eq!(cmd.get_command_string(), "Slope,?\0");
         assert_eq!(cmd.get_delay(), 300);
     }
@@ -242,13 +393,13 @@ mod tests {
     #[test]
     fn build_command_temperature_compensation() {
         let cmd = TemperatureCompensation(19.5);
-        assert_eq!(cmd.get_command_string(), "T,19.5\0");
+        assert_eq!(cmd.get_command_string(), "T,19.500\0");
         assert_eq!(cmd.get_delay(), 300);
     }
 
     #[test]
     fn build_command_temperature_compensation_value() {
-        let cmd = TemperatureCompensationValue;
+        let cmd = CompensatedTemperatureValue;
         assert_eq!(cmd.get_command_string(), "T,?\0");
         assert_eq!(cmd.get_delay(), 300);
     }
