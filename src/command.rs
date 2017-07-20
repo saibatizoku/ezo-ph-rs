@@ -200,4 +200,11 @@ mod tests {
         assert_eq!(cmd.get_command_string(), "Plock,?\0");
         assert_eq!(cmd.get_delay(), 300);
     }
+
+    #[test]
+    fn build_command_reading() {
+        let cmd = Reading;
+        assert_eq!(cmd.get_command_string(), "R\0");
+        assert_eq!(cmd.get_delay(), 600);
+    }
 }
