@@ -229,4 +229,18 @@ mod tests {
         assert_eq!(cmd.get_command_string(), "Status\0");
         assert_eq!(cmd.get_delay(), 300);
     }
+
+    #[test]
+    fn build_command_temperature_compensation() {
+        let cmd = TemperatureCompensation(19.5);
+        assert_eq!(cmd.get_command_string(), "T,19.5\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn build_command_temperature_compensation_value() {
+        let cmd = TemperatureCompensationValue;
+        assert_eq!(cmd.get_command_string(), "T,?\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
 }
