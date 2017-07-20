@@ -158,4 +158,25 @@ mod tests {
         assert_eq!(cmd.get_command_string(), "I2C,88\0");
         assert_eq!(cmd.get_delay(), 300);
     }
+
+    #[test]
+    fn build_command_led_on() {
+        let cmd = LedOn;
+        assert_eq!(cmd.get_command_string(), "L,1\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn build_command_led_off() {
+        let cmd = LedOff;
+        assert_eq!(cmd.get_command_string(), "L,0\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn build_command_led_state() {
+        let cmd = LedState;
+        assert_eq!(cmd.get_command_string(), "L,?\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
 }
