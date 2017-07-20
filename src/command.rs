@@ -13,6 +13,15 @@ use i2cdev::linux::LinuxI2CDevice;
 /// Maximum ascii-character response size + 2
 pub const MAX_RESPONSE_LENGTH: usize = 401;
 
+/// I2C command for the EZO chip.
+pub trait Command {
+    type Response;
+
+    fn get_command_string (&self) -> String;
+    fn get_delay (&self) -> u64;
+    fn run(&self, dev: &mut LinuxI2CDevice) -> Result<Self::Response>;
+}
+
 
 #[cfg(test)]
 mod tests {
