@@ -108,4 +108,26 @@ mod tests {
         assert_eq!(cmd.get_command_string(), "Cal,?\0");
         assert_eq!(cmd.get_delay(), 300);
     }
+
+    #[test]
+    fn build_command_export() {
+        let cmd = Export;
+        assert_eq!(cmd.get_command_string(), "Export\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn build_command_export_info() {
+        let cmd = ExportInfo;
+        assert_eq!(cmd.get_command_string(), "Export,?\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn build_command_import() {
+        let calibration_string = "ABCDEFGHIJKLMNO".to_string();
+        let cmd = Import(calibration_string);
+        assert_eq!(cmd.get_command_string(), "Import,ABCDEFGHIJKLMNO\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
 }
