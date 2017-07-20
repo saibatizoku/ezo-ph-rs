@@ -144,4 +144,18 @@ mod tests {
         assert_eq!(cmd.get_command_string(), "F\0");
         assert_eq!(cmd.get_delay(), 300);
     }
+
+    #[test]
+    fn build_command_device_information() {
+        let cmd = DeviceInformation;
+        assert_eq!(cmd.get_command_string(), "I\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn build_command_change_device_address() {
+        let cmd = DeviceAddress(88);
+        assert_eq!(cmd.get_command_string(), "I2C,88\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
 }
