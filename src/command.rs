@@ -179,4 +179,25 @@ mod tests {
         assert_eq!(cmd.get_command_string(), "L,?\0");
         assert_eq!(cmd.get_delay(), 300);
     }
+
+    #[test]
+    fn build_command_plock_enable() {
+        let cmd = ProtocolLockEnable;
+        assert_eq!(cmd.get_command_string(), "Plock,1\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn build_command_plock_disable() {
+        let cmd = ProtocolLockDisable;
+        assert_eq!(cmd.get_command_string(), "Plock,0\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
+
+    #[test]
+    fn build_command_plock_status() {
+        let cmd = ProtocolLockState;
+        assert_eq!(cmd.get_command_string(), "Plock,?\0");
+        assert_eq!(cmd.get_delay(), 300);
+    }
 }
