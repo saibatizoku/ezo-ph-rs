@@ -20,8 +20,8 @@ extern crate i2cdev;
 // Use error-chain.
 pub mod errors;
 
-/// Issuable commands for the PH RTD Chip.
+/// Issuable commands for the PH EZO Chip.
 pub mod command;
 
-/// Parseable responses from the PH RTD Chip.
+/// Parseable responses from the PH EZO Chip.
 pub mod response;
