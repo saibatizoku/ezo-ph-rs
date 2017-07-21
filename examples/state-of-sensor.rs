@@ -10,9 +10,9 @@ extern crate i2cdev;
 
 use ezo_ph::errors::*;
 
-use ezo_ph::command::{Command, DeviceInformation, CalibrationState, Export, ExportInfo, LedState, Reading, Slope, Sleep, Status};
+use ezo_ph::command::{Command, DeviceInformation, CalibrationState, LedState, Reading, Slope, Sleep, Status};
 
-use ezo_ph::response::{CalibrationStatus, DeviceInfo, DeviceStatus, Exported, ExportedInfo, LedStatus, SensorReading, ProbeSlope};
+use ezo_ph::response::{CalibrationStatus, DeviceInfo, DeviceStatus, LedStatus, SensorReading, ProbeSlope};
 
 use i2cdev::linux::LinuxI2CDevice;
 
@@ -35,14 +35,6 @@ fn run() -> Result<()> {
 
     let led_status: LedStatus = LedState.run(&mut dev)?;
     println!("LedState: {:?}", led_status);
-
-    let ExportedInfo { lines, total_bytes } = ExportInfo.run(&mut dev)?;
-    println!("ExportInfo: #lines {}, #bytes {}", lines, total_bytes);
-
-    for _ in 0...lines {
-        let exports: Exported = Export.run(&mut dev)?;
-        println!("Exported: {:?}", exports);
-    }
 
     let ph_value: SensorReading = Reading.run(&mut dev)?;
     println!("{:?}", ph_value);
