@@ -4,6 +4,11 @@ use ezo_common;
 error_chain! {
     errors {
         // The unsuccessful response code
+        InvalidReading {
+            description ("device returned an invalid reading")
+            display ("response was valid but reading is out of valid range")
+        }
+        // The unsuccessful response code
         I2CRead {
             description ("unsuccessful device read")
             display ("response was not obtainable")

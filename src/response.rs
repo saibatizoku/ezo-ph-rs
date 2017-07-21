@@ -6,6 +6,12 @@ use std::str::FromStr;
 
 use errors::*;
 
+/// Minimum possible pH reading, per pH probe data sheet.
+pub const PROBE_LOWER_LIMIT: f64 = 0.0;
+
+/// Maximum possible pH reading, per pH probe data sheet.
+pub const PROBE_UPPER_LIMIT: f64 = 14.0;
+
 /// Calibration status of the PH EZO chip.
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum CalibrationStatus {
@@ -202,7 +208,12 @@ impl SensorReading {
     /// responsibility to know the current `TemperatureScale` setting.
     pub fn parse(response: &str) -> Result<SensorReading> {
         let val = f64::from_str(response).chain_err(|| ErrorKind::ResponseParse)?;
-        Ok(SensorReading(val))
+
+        match val {
+            v if (v >= PROBE_LOWER_LIMIT) && (v <= PROBE_UPPER_LIMIT) => Ok ( SensorReading(v) ),
+
+            _ => Err ( ErrorKind::InvalidReading.into() ),
+        }
     }
 }
 
@@ -508,11 +519,15 @@ mod tests {
     fn parses_sensor_reading() {
         let response = "0";
         assert_eq!(SensorReading::parse(response).unwrap(),
-                   SensorReading(0.0));
+                   SensorReading(0.00));
 
         let response = "12.5";
         assert_eq!(SensorReading::parse(response).unwrap(),
-                   SensorReading(12.5));
+                   SensorReading(12.50));
+
+        let response = "14.0";
+        assert_eq!(SensorReading::parse(response).unwrap(),
+                   SensorReading(14.00));
     }
 
     #[test]
@@ -523,7 +538,13 @@ mod tests {
         let response = "-x";
         assert!(SensorReading::parse(response).is_err());
 
-        let response = "-10.5.5";
+        let response = "-0.5";
+        assert!(SensorReading::parse(response).is_err());
+
+        let response = "10.5.5";
+        assert!(SensorReading::parse(response).is_err());
+
+        let response = "14.1";
         assert!(SensorReading::parse(response).is_err());
     }
 
