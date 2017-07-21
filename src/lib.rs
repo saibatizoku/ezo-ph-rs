@@ -23,6 +23,9 @@ pub mod errors;
 /// Issuable commands for the EZO RTD Chip.
 pub mod command;
 
+/// Parseable responses from the EZO RTD Chip.
+pub mod response;
+
 use errors::*;
 use ezo_common::BpsRate;
 use i2cdev::core::I2CDevice;
