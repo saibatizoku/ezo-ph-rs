@@ -1,10 +1,321 @@
-//! Parses I2C responses from the pH EZO Chip.
+//! Parses I2C responses from the PH EZO Chip.
 //!
-//! Initial code graciously donated by "Federico Mena Quintero <federico@gnome.org>".
+//! Code modified from "Federico Mena Quintero <federico@gnome.org>"'s original.
 
 use std::str::FromStr;
 
 use errors::*;
+
+/// Calibration status of the PH EZO chip.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum CalibrationStatus {
+    OnePoint,
+    TwoPoint,
+    ThreePoint,
+    NotCalibrated,
+}
+
+impl CalibrationStatus {
+    /// Parses the result of the "Cal,?" command to query the device's
+    /// calibration status.  Returns ...
+    pub fn parse(response: &str) -> Result<CalibrationStatus> {
+        if response.starts_with("?CAL,") {
+            let rest = response.get(5..).unwrap();
+            let mut split = rest.split(',');
+
+            let _calibration = match split.next() {
+                Some("3") => Ok(CalibrationStatus::ThreePoint),
+                Some("2") => Ok(CalibrationStatus::TwoPoint),
+                Some("1") => Ok(CalibrationStatus::OnePoint),
+                Some("0") => Ok(CalibrationStatus::NotCalibrated),
+                _ => return Err(ErrorKind::ResponseParse.into()),
+            };
+
+            match split.next() {
+                None => _calibration,
+                _ => Err(ErrorKind::ResponseParse.into()),
+            }
+        } else {
+            Err(ErrorKind::ResponseParse.into())
+        }
+    }
+}
+
+/// Exported calibration string of the PH EZO chip.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Exported {
+    ExportString(String),
+    Done,
+}
+
+impl Exported {
+    pub fn parse(response: &str) -> Result<Exported> {
+        if response.starts_with("*") {
+            match response {
+                "*DONE" => Ok(Exported::Done),
+                _ => Err(ErrorKind::ResponseParse.into()),
+            }
+        } else {
+            match response.len() {
+                1..13 => Ok(Exported::ExportString(response.to_string())),
+                _ => Err(ErrorKind::ResponseParse.into()),
+            }
+        }
+    }
+}
+
+/// Export the current calibration settings of the PH EZO chip.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct ExportedInfo {
+    pub lines: u16,
+    pub total_bytes: u16,
+}
+
+impl ExportedInfo {
+    pub fn parse(response: &str) -> Result<ExportedInfo> {
+        if response.starts_with("?EXPORT,") {
+            let num_str = response.get(8..).unwrap();
+
+            let mut split = num_str.split(",");
+
+            let lines = if let Some(lines_str) = split.next() {
+                u16::from_str(lines_str)
+                    .chain_err(|| ErrorKind::ResponseParse)?
+            } else {
+                return Err(ErrorKind::ResponseParse.into());
+            };
+
+            let total_bytes = if let Some(totalbytes_str) = split.next() {
+                u16::from_str(totalbytes_str)
+                    .chain_err(|| ErrorKind::ResponseParse)?
+            } else {
+                return Err(ErrorKind::ResponseParse.into());
+            };
+
+            if let Some(_) = split.next() {
+                return Err(ErrorKind::ResponseParse.into());
+            }
+
+            Ok (ExportedInfo { lines, total_bytes } )
+        } else {
+            Err(ErrorKind::ResponseParse.into())
+        }
+    }
+}
+
+/// Current firmware settings of the PH EZO chip.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DeviceInfo {
+    pub device: String,
+    pub firmware: String,
+}
+
+impl DeviceInfo {
+    pub fn parse(response: &str) -> Result<DeviceInfo> {
+        if response.starts_with("?I,") {
+            let rest = response.get(3..).unwrap();
+            let mut split = rest.split(',');
+
+            let device = if let Some(device_str) = split.next() {
+                device_str.to_string()
+            } else {
+                return Err(ErrorKind::ResponseParse.into());
+            };
+
+            let firmware = if let Some(firmware_str) = split.next() {
+                firmware_str.to_string()
+            } else {
+                return Err(ErrorKind::ResponseParse.into());
+            };
+
+            if let Some(_) = split.next() {
+                return Err(ErrorKind::ResponseParse.into());
+            }
+
+            Ok (DeviceInfo { device, firmware } )
+
+        } else {
+            Err(ErrorKind::ResponseParse.into())
+        }
+    }
+}
+
+/// Status of PH EZO's LED.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum LedStatus {
+    Off,
+    On,
+}
+
+impl LedStatus {
+    pub fn parse(response: &str) -> Result<LedStatus> {
+        if response.starts_with("?L,") {
+            let rest = response.get(3..).unwrap();
+
+            match rest {
+                "1" => Ok(LedStatus::On),
+                "0" => Ok(LedStatus::Off),
+                _ => return Err(ErrorKind::ResponseParse.into()),
+            }
+        } else {
+            Err(ErrorKind::ResponseParse.into())
+        }
+    }
+}
+
+/// Status of I2C protocol lock.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum ProtocolLockStatus {
+    Off,
+    On,
+}
+
+impl ProtocolLockStatus {
+    pub fn parse(response: &str) -> Result<ProtocolLockStatus> {
+        if response.starts_with("?PLOCK,") {
+            let rest = response.get(7..).unwrap();
+            let mut split = rest.split(',');
+
+            let _plock_status = match split.next() {
+                Some("1") => Ok(ProtocolLockStatus::On),
+                Some("0") => Ok(ProtocolLockStatus::Off),
+                _ => return Err(ErrorKind::ResponseParse.into()),
+            };
+
+            match split.next() {
+                None => _plock_status,
+                _ => Err(ErrorKind::ResponseParse.into()),
+            }
+        } else {
+            Err(ErrorKind::ResponseParse.into())
+        }
+    }
+}
+
+/// A temperature reading
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct SensorReading(pub f64);
+
+impl SensorReading {
+    /// Parses the result of the "T" command to get a temperature reading.
+    /// Note that the returned value has no known units. It is your
+    /// responsibility to know the current `TemperatureScale` setting.
+    pub fn parse(response: &str) -> Result<SensorReading> {
+        let val = f64::from_str(response).chain_err(|| ErrorKind::ResponseParse)?;
+        Ok(SensorReading(val))
+    }
+}
+
+/// Slope-points for the current sensor probe
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct ProbeSlope {
+    pub acid_end: f64,
+    pub base_end: f64,
+}
+
+impl ProbeSlope {
+    /// Parses the result of the "Slope,?" command to get the device's status.
+    pub fn parse(response: &str) -> Result<ProbeSlope> {
+        if response.starts_with("?SLOPE,") {
+            let num_str = response.get(7..).unwrap();
+
+            let mut split = num_str.split(",");
+
+            let acid_end = if let Some(acid_str) = split.next() {
+                f64::from_str(acid_str)
+                    .chain_err(|| ErrorKind::ResponseParse)?
+            } else {
+                return Err(ErrorKind::ResponseParse.into());
+            };
+
+            let base_end = if let Some(base_str) = split.next() {
+                f64::from_str(base_str)
+                    .chain_err(|| ErrorKind::ResponseParse)?
+            } else {
+                return Err(ErrorKind::ResponseParse.into());
+            };
+
+            if let Some(_) = split.next() {
+                return Err(ErrorKind::ResponseParse.into());
+            }
+
+            Ok ( ProbeSlope { acid_end, base_end } )
+        } else {
+            Err(ErrorKind::ResponseParse.into())
+        }
+    }
+}
+/// Reason for which the device restarted, data sheet pp. 58
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum RestartReason {
+    PoweredOff,
+    SoftwareReset,
+    BrownOut,
+    Watchdog,
+    Unknown,
+}
+
+/// Response from the "Status" command to get the device status
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct DeviceStatus {
+    pub restart_reason: RestartReason,
+    pub vcc_voltage: f64,
+}
+
+impl DeviceStatus {
+    /// Parses the result of the "Status" command to get the device's status.
+    pub fn parse(response: &str) -> Result<DeviceStatus> {
+        if response.starts_with("?STATUS,") {
+            let rest = response.get(8..).unwrap();
+            let mut split = rest.split(',');
+
+            let restart_reason = match split.next() {
+                Some("P") => RestartReason::PoweredOff,
+                Some("S") => RestartReason::SoftwareReset,
+                Some("B") => RestartReason::BrownOut,
+                Some("W") => RestartReason::Watchdog,
+                Some("U") => RestartReason::Unknown,
+                _ => return Err(ErrorKind::ResponseParse.into()),
+            };
+
+            let voltage = if let Some(voltage_str) = split.next() {
+                f64::from_str(voltage_str)
+                    .chain_err(|| ErrorKind::ResponseParse)?
+            } else {
+                return Err(ErrorKind::ResponseParse.into());
+            };
+
+            if let Some(_) = split.next() {
+                return Err(ErrorKind::ResponseParse.into());
+            }
+
+            Ok(DeviceStatus {
+                   restart_reason: restart_reason,
+                   vcc_voltage: voltage,
+               })
+        } else {
+            Err(ErrorKind::ResponseParse.into())
+        }
+    }
+}
+
+/// Current temperature value used for pH compensation.
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct CompensationValue(pub f64);
+
+impl CompensationValue {
+    /// Parses the result of the "T,?" command to get the device's
+    /// temperature compensation value.
+    pub fn parse(response: &str) -> Result<CompensationValue> {
+        if response.starts_with("?T,") {
+            let rest = response.get(3..).unwrap();
+            let val = f64::from_str(rest).chain_err(|| ErrorKind::ResponseParse)?;
+            Ok ( CompensationValue(val) )
+        } else {
+            Err(ErrorKind::ResponseParse.into())
+        }
+    }
+}
 
 #[cfg(test)]
 mod tests {
@@ -110,11 +421,11 @@ mod tests {
 
     #[test]
     fn parses_device_information() {
-        let response = "?I,RTD,2.01";
+        let response = "?I,PH,1.98";
         assert_eq!(DeviceInfo::parse(response).unwrap(),
                    DeviceInfo {
-                       device: "RTD".to_string(),
-                       firmware: "2.01".to_string(),
+                       device: "PH".to_string(),
+                       firmware: "1.98".to_string(),
                    } );
 
         let response = "?I,,";
