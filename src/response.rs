@@ -203,7 +203,7 @@ impl ProtocolLockStatus {
 pub struct SensorReading(pub f64);
 
 impl SensorReading {
-    /// Parses the result of the "T" command to get a temperature reading.
+    /// Parses the result of the "R" command to get a temperature reading.
     /// Note that the returned value has no known units. It is your
     /// responsibility to know the current `TemperatureScale` setting.
     pub fn parse(response: &str) -> Result<SensorReading> {
