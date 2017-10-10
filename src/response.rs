@@ -1,7 +1,7 @@
 //! Parses I2C responses from the PH EZO Chip.
 //!
 //! Code modified from "Federico Mena Quintero <federico@gnome.org>"'s original.
-
+use std::fmt;
 use std::str::FromStr;
 
 use errors::*;
@@ -214,6 +214,12 @@ impl SensorReading {
 
             _ => Err ( ErrorKind::InvalidReading.into() ),
         }
+    }
+}
+
+impl fmt::Display for SensorReading {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:.*}", 3, self.0)
     }
 }
 
