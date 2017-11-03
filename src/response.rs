@@ -174,7 +174,7 @@ impl DeviceInfo {
 
 impl fmt::Display for DeviceInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "?I,{},{}", self.device, self.firmware)
+        write!(f, "{},{}", self.device, self.firmware)
     }
 }
 
