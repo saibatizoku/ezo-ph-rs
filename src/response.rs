@@ -13,7 +13,7 @@ pub const PROBE_LOWER_LIMIT: f64 = 0.0;
 pub const PROBE_UPPER_LIMIT: f64 = 14.0;
 
 /// Calibration status of the PH EZO chip.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum CalibrationStatus {
     OnePoint,
     TwoPoint,
@@ -47,6 +47,17 @@ impl CalibrationStatus {
     }
 }
 
+impl fmt::Debug for CalibrationStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            CalibrationStatus::OnePoint => write!(f, "?CAL,1"),
+            CalibrationStatus::TwoPoint => write!(f, "?CAL,2"),
+            CalibrationStatus::ThreePoint => write!(f, "?CAL,3"),
+            CalibrationStatus::NotCalibrated => write!(f, "?CAL,0"),
+        }
+    }
+}
+
 impl fmt::Display for CalibrationStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
@@ -59,7 +70,7 @@ impl fmt::Display for CalibrationStatus {
 }
 
 /// Exported calibration string of the PH EZO chip.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub enum Exported {
     ExportString(String),
     Done,
@@ -81,6 +92,15 @@ impl Exported {
     }
 }
 
+impl fmt::Debug for Exported {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            Exported::ExportString(ref s) => write!(f, "{}", s),
+            Exported::Done => write!(f, "*DONE"),
+        }
+    }
+}
+
 impl fmt::Display for Exported {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
@@ -91,7 +111,7 @@ impl fmt::Display for Exported {
 }
 
 /// Export the current calibration settings of the PH EZO chip.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct ExportedInfo {
     pub lines: u16,
     pub total_bytes: u16,
@@ -129,6 +149,12 @@ impl ExportedInfo {
     }
 }
 
+impl fmt::Debug for ExportedInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "?EXPORT,{},{}", self.lines, self.total_bytes)
+    }
+}
+
 impl fmt::Display for ExportedInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{},{}", self.lines, self.total_bytes)
@@ -136,7 +162,7 @@ impl fmt::Display for ExportedInfo {
 }
 
 /// Current firmware settings of the PH EZO chip.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Clone, PartialEq)]
 pub struct DeviceInfo {
     pub device: String,
     pub firmware: String,
@@ -172,6 +198,12 @@ impl DeviceInfo {
     }
 }
 
+impl fmt::Debug for DeviceInfo {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "?I,{},{}", self.device, self.firmware)
+    }
+}
+
 impl fmt::Display for DeviceInfo {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{},{}", self.device, self.firmware)
@@ -179,7 +211,7 @@ impl fmt::Display for DeviceInfo {
 }
 
 /// Status of PH EZO's LED.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum LedStatus {
     Off,
     On,
@@ -201,6 +233,15 @@ impl LedStatus {
     }
 }
 
+impl fmt::Debug for LedStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            LedStatus::On => write!(f, "?L,1"),
+            LedStatus::Off => write!(f, "?L,0"),
+        }
+    }
+}
+
 impl fmt::Display for LedStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
@@ -211,7 +252,7 @@ impl fmt::Display for LedStatus {
 }
 
 /// Status of I2C protocol lock.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum ProtocolLockStatus {
     Off,
     On,
@@ -239,6 +280,15 @@ impl ProtocolLockStatus {
     }
 }
 
+impl fmt::Debug for ProtocolLockStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            ProtocolLockStatus::On => write!(f, "?PLOCK,1"),
+            ProtocolLockStatus::Off => write!(f, "?PLOCK,0"),
+        }
+    }
+}
+
 impl fmt::Display for ProtocolLockStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
@@ -249,7 +299,7 @@ impl fmt::Display for ProtocolLockStatus {
 }
 
 /// A temperature reading
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct SensorReading(pub f64);
 
 impl SensorReading {
@@ -267,6 +317,12 @@ impl SensorReading {
     }
 }
 
+impl fmt::Debug for SensorReading {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:.*}", 3, self.0)
+    }
+}
+
 impl fmt::Display for SensorReading {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:.*}", 3, self.0)
@@ -274,7 +330,7 @@ impl fmt::Display for SensorReading {
 }
 
 /// Slope-points for the current sensor probe
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct ProbeSlope {
     pub acid_end: f64,
     pub base_end: f64,
@@ -313,6 +369,12 @@ impl ProbeSlope {
     }
 }
 
+impl fmt::Debug for ProbeSlope {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "?SLOPE,{:.*},{:.*}", 3, self.acid_end, 3, self.base_end)
+    }
+}
+
 impl fmt::Display for ProbeSlope {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:.*},{:.*}", 3, self.acid_end, 3, self.base_end)
@@ -320,13 +382,25 @@ impl fmt::Display for ProbeSlope {
 }
 
 /// Reason for which the device restarted, data sheet pp. 58
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum RestartReason {
     PoweredOff,
     SoftwareReset,
     BrownOut,
     Watchdog,
     Unknown,
+}
+
+impl fmt::Debug for RestartReason {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match *self {
+            RestartReason::PoweredOff => write!(f, "P"),
+            RestartReason::SoftwareReset => write!(f, "S"),
+            RestartReason::BrownOut => write!(f, "B"),
+            RestartReason::Watchdog => write!(f, "W"),
+            RestartReason::Unknown => write!(f, "U"),
+        }
+    }
 }
 
 impl fmt::Display for RestartReason {
@@ -342,7 +416,7 @@ impl fmt::Display for RestartReason {
 }
 
 /// Response from the "Status" command to get the device status
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct DeviceStatus {
     pub restart_reason: RestartReason,
     pub vcc_voltage: f64,
@@ -385,6 +459,12 @@ impl DeviceStatus {
     }
 }
 
+impl fmt::Debug for DeviceStatus {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "?STATUS,{:?},{:.*}", self.restart_reason, 3, self.vcc_voltage)
+    }
+}
+
 impl fmt::Display for DeviceStatus {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{},{:.*}", self.restart_reason, 3, self.vcc_voltage)
@@ -392,7 +472,7 @@ impl fmt::Display for DeviceStatus {
 }
 
 /// Current temperature value used for pH compensation.
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub struct CompensationValue(pub f64);
 
 impl CompensationValue {
@@ -406,6 +486,12 @@ impl CompensationValue {
         } else {
             Err(ErrorKind::ResponseParse.into())
         }
+    }
+}
+
+impl fmt::Debug for CompensationValue {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "?T,{:.*}", 3, self.0)
     }
 }
 
