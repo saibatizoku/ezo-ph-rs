@@ -89,7 +89,10 @@ impl FromStr for CalibrationMid {
             let rest = supper.get(8..).unwrap();
             let mut split = rest.split(',');
             let value = match split.next() {
-                Some(n) => n.parse::<f64>().unwrap(),
+                Some(n) => {
+                    n.parse::<f64>()
+                        .chain_err(|| ErrorKind::CommandParse)?
+                }
                 _ => bail!(ErrorKind::CommandParse),
             };
             match split.next() {
@@ -116,7 +119,10 @@ impl FromStr for CalibrationLow {
             let rest = supper.get(8..).unwrap();
             let mut split = rest.split(',');
             let value = match split.next() {
-                Some(n) => n.parse::<f64>().unwrap(),
+                Some(n) => {
+                    n.parse::<f64>()
+                        .chain_err(|| ErrorKind::CommandParse)?
+                }
                 _ => bail!(ErrorKind::CommandParse),
             };
             match split.next() {
@@ -143,7 +149,10 @@ impl FromStr for CalibrationHigh {
             let rest = supper.get(9..).unwrap();
             let mut split = rest.split(',');
             let value = match split.next() {
-                Some(n) => n.parse::<f64>().unwrap(),
+                Some(n) => {
+                    n.parse::<f64>()
+                        .chain_err(|| ErrorKind::CommandParse)?
+                }
                 _ => bail!(ErrorKind::CommandParse),
             };
             match split.next() {
@@ -305,7 +314,8 @@ impl FromStr for DeviceAddress {
             let mut split = rest.split(',');
             let value = match split.next() {
                 Some(n) => {
-                    n.parse::<u16>().unwrap()
+                    n.parse::<u16>()
+                        .chain_err(|| ErrorKind::CommandParse)?
                 }
                 _ => bail!(ErrorKind::CommandParse),
             };
@@ -526,7 +536,10 @@ impl FromStr for TemperatureCompensation {
             let rest = supper.get(2..).unwrap();
             let mut split = rest.split(',');
             let value = match split.next() {
-                Some(n) => n.parse::<f64>().unwrap(),
+                Some(n) => {
+                    n.parse::<f64>()
+                        .chain_err(|| ErrorKind::CommandParse)?
+                }
                 _ => bail!(ErrorKind::CommandParse),
             };
             match split.next() {
@@ -706,6 +719,15 @@ mod tests {
     }
 
     #[test]
+    fn parse_invalid_command_calibration_mid_yields_err() {
+        let cmd = "cal,mid,".parse::<CalibrationMid>();
+        assert!(cmd.is_err());
+
+        let cmd = "CAL,MID,1a21.43".parse::<CalibrationMid>();
+        assert!(cmd.is_err());
+    }
+
+    #[test]
     fn build_command_calibration_low() {
         let cmd = CalibrationLow(4.);
         assert_eq!(cmd.get_command_string(), "CAL,LOW,4.00");
@@ -722,6 +744,15 @@ mod tests {
     }
 
     #[test]
+    fn parse_invalid_command_calibration_low_yields_err() {
+        let cmd = "cal,low,".parse::<CalibrationLow>();
+        assert!(cmd.is_err());
+
+        let cmd = "CAL,LOW,1a21.43".parse::<CalibrationLow>();
+        assert!(cmd.is_err());
+    }
+
+    #[test]
     fn build_command_calibration_high() {
         let cmd = CalibrationHigh(10.056);
         assert_eq!(cmd.get_command_string(), "CAL,HIGH,10.06");
@@ -735,6 +766,15 @@ mod tests {
 
         let cmd = "Cal,HIGH,4121.43".parse::<CalibrationHigh>().unwrap();
         assert_eq!(cmd, CalibrationHigh(4121.43));
+    }
+
+    #[test]
+    fn parse_invalid_command_calibration_high_yields_err() {
+        let cmd = "cal,high,".parse::<CalibrationHigh>();
+        assert!(cmd.is_err());
+
+        let cmd = "CAL,High,1a21.43".parse::<CalibrationHigh>();
+        assert!(cmd.is_err());
     }
 
     #[test]
@@ -874,12 +914,21 @@ mod tests {
     }
 
     #[test]
-    fn parse_case_insensitive_device_address() {
+    fn parse_case_insensitive_command_device_address() {
         let cmd = "i2c,1".parse::<DeviceAddress>().unwrap();
         assert_eq!(cmd, DeviceAddress(1));
 
         let cmd = "I2C,123".parse::<DeviceAddress>().unwrap();
         assert_eq!(cmd, DeviceAddress(123));
+    }
+
+    #[test]
+    fn parse_invalid_command_device_address_yields_err() {
+        let cmd = "I2C,".parse::<DeviceAddress>();
+        assert!(cmd.is_err());
+
+        let cmd = "I2C,1a21.43".parse::<DeviceAddress>();
+        assert!(cmd.is_err());
     }
 
     #[test]
@@ -1056,6 +1105,18 @@ mod tests {
 
         let cmd = "T,10.5".parse::<TemperatureCompensation>().unwrap();
         assert_eq!(cmd, TemperatureCompensation(10.5));
+    }
+
+    #[test]
+    fn parse_invalid_command_temperature_compensation_yields_err() {
+        let cmd = "T,".parse::<TemperatureCompensation>();
+        assert!(cmd.is_err());
+
+        let cmd = "T,$".parse::<TemperatureCompensation>();
+        assert!(cmd.is_err());
+
+        let cmd = "T,1a21.43".parse::<TemperatureCompensation>();
+        assert!(cmd.is_err());
     }
 
     #[test]
