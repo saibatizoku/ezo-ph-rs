@@ -922,6 +922,15 @@ mod tests {
     }
 
     #[test]
+    fn parse_case_insensitive_command_led_state() {
+        let cmd = "l,?".parse::<LedState>().unwrap();
+        assert_eq!(cmd, LedState);
+
+        let cmd = "L,?".parse::<LedState>().unwrap();
+        assert_eq!(cmd, LedState);
+    }
+
+    #[test]
     fn build_command_plock_enable() {
         let cmd = ProtocolLockEnable;
         assert_eq!(cmd.get_command_string(), "PLOCK,1");
