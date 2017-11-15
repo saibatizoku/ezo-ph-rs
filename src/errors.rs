@@ -3,6 +3,10 @@ use ezo_common;
 
 error_chain! {
     errors {
+        // The command could not be parsed
+        CommandParse {
+            description ("could not parse command")
+        }
         // The unsuccessful response code
         InvalidReading {
             description ("device returned an invalid reading")
