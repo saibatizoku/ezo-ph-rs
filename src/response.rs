@@ -6,7 +6,16 @@ use std::str::FromStr;
 
 use errors::*;
 
-pub use ezo_common::response::*;
+pub use ezo_common::response::{
+    DeviceInfo,
+    DeviceStatus,
+    Exported,
+    ExportedInfo,
+    LedStatus,
+    ResponseStatus,
+    RestartReason,
+    ProtocolLockStatus,
+};
 
 /// Minimum possible pH reading, per pH probe data sheet.
 pub const PROBE_LOWER_LIMIT: f64 = 0.0;
