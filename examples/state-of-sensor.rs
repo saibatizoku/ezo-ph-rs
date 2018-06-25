@@ -1,7 +1,5 @@
 //! An example that retrieves the current settings of the PH EZO chip.
 //!
-#![recursion_limit = "1024"]
-#![feature(inclusive_range_syntax)]
 extern crate ezo_ph;
 extern crate failure;
 extern crate i2cdev;
