@@ -1,10 +1,13 @@
 //! I2C Commands for pH EZO Chip.
 //!
+use std::result;
 use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 
-use errors::*;
+use errors::ErrorKind;
+use failure::{Error, ResultExt};
+
 use response::{
     CalibrationStatus,
     CompensationValue,
@@ -30,6 +33,7 @@ pub const MAX_DATA: usize = 401;
 pub use ezo_common::Command;
 pub use ezo_common::command::*;
 
+pub type Result<T> = result::Result<T, Error>;
 
 define_command! {
     doc: "`CAL,MID,t` command, where `t` is of type `f64`.",
@@ -47,7 +51,7 @@ impl FromStr for CalibrationMid {
             let value = match split.next() {
                 Some(n) => {
                     n.parse::<f64>()
-                        .chain_err(|| ErrorKind::CommandParse)?
+                        .context(ErrorKind::CommandParse)?
                 }
                 _ => bail!(ErrorKind::CommandParse),
             };
@@ -77,7 +81,7 @@ impl FromStr for CalibrationLow {
             let value = match split.next() {
                 Some(n) => {
                     n.parse::<f64>()
-                        .chain_err(|| ErrorKind::CommandParse)?
+                        .context(ErrorKind::CommandParse)?
                 }
                 _ => bail!(ErrorKind::CommandParse),
             };
@@ -107,7 +111,7 @@ impl FromStr for CalibrationHigh {
             let value = match split.next() {
                 Some(n) => {
                     n.parse::<f64>()
-                        .chain_err(|| ErrorKind::CommandParse)?
+                        .context(ErrorKind::CommandParse)?
                 }
                 _ => bail!(ErrorKind::CommandParse),
             };
@@ -191,7 +195,7 @@ impl FromStr for TemperatureCompensation {
             let value = match split.next() {
                 Some(n) => {
                     n.parse::<f64>()
-                        .chain_err(|| ErrorKind::CommandParse)?
+                        .context(ErrorKind::CommandParse)?
                 }
                 _ => bail!(ErrorKind::CommandParse),
             };

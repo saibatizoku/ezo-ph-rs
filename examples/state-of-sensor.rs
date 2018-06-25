@@ -1,28 +1,25 @@
 //! An example that retrieves the current settings of the PH EZO chip.
 //!
-
 #![recursion_limit = "1024"]
-
 #![feature(inclusive_range_syntax)]
-
 extern crate ezo_ph;
+extern crate failure;
 extern crate i2cdev;
 
-use ezo_ph::errors::*;
-
-use ezo_ph::command::{Command, DeviceInformation, CalibrationState, LedState, Reading, Slope, Sleep, Status};
-
-use ezo_ph::response::{CalibrationStatus, DeviceInfo, DeviceStatus, LedStatus, SensorReading, ProbeSlope};
-
+use ezo_ph::{
+    command::{Command, DeviceInformation, CalibrationState, LedState, Reading, Slope, Sleep, Status},
+    response::{CalibrationStatus, DeviceInfo, DeviceStatus, LedStatus, SensorReading, ProbeSlope},
+};
+use failure::{Error, ResultExt};
 use i2cdev::linux::LinuxI2CDevice;
 
 const I2C_BUS_ID: u8 = 1;
 const EZO_SENSOR_ADDR: u16 = 99; // could be specified as 0x63
 
-fn run() -> Result<()> {
+fn run() -> Result<(), Error> {
     let device_path = format!("/dev/i2c-{}", I2C_BUS_ID);
     let mut dev = LinuxI2CDevice::new(&device_path, EZO_SENSOR_ADDR)
-        .chain_err(|| "Could not open I2C device")?;
+        .context("Could not open I2C device")?;
 
     let info: DeviceInfo = DeviceInformation.run(&mut dev)?;
     println!("{:?}", info);
@@ -51,16 +48,10 @@ fn run() -> Result<()> {
 fn main() {
     if let Err(ref e) = run() {
         println!("error: {}", e);
-
-        for e in e.iter().skip(1) {
-            println!("caused by: {}", e);
-        }
-
         // The backtrace is not always generated. Try to run this example
         // with `RUST_BACKTRACE=1`.
-        if let Some(backtrace) = e.backtrace() {
-            println!("backtrace: {:?}", backtrace);
-        }
+        let backtrace = e.backtrace();
+        println!("backtrace: {:?}", backtrace);
         ::std::process::exit(1);
     }
 }

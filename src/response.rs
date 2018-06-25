@@ -1,10 +1,12 @@
 //! Parses I2C responses from the PH EZO Chip.
 //!
 //! Code modified from "Federico Mena Quintero <federico@gnome.org>"'s original.
+use std::result;
 use std::fmt;
 use std::str::FromStr;
 
-use errors::*;
+use errors::ErrorKind;
+use failure::{Error, ResultExt};
 
 pub use ezo_common::response::{
     DeviceInfo,
@@ -22,6 +24,8 @@ pub const PROBE_LOWER_LIMIT: f64 = 0.0;
 
 /// Maximum possible pH reading, per pH probe data sheet.
 pub const PROBE_UPPER_LIMIT: f64 = 14.0;
+
+pub type Result<T> = result::Result<T, Error>;
 
 /// Calibration status of the PH EZO chip.
 #[derive(Copy, Clone, PartialEq)]
@@ -89,7 +93,7 @@ impl SensorReading {
     /// Note that the returned value has no known units. It is your
     /// responsibility to know the current `TemperatureScale` setting.
     pub fn parse(response: &str) -> Result<SensorReading> {
-        let val = f64::from_str(response).chain_err(|| ErrorKind::ResponseParse)?;
+        let val = f64::from_str(response).context(ErrorKind::ResponseParse)?;
 
         match val {
             v if (v >= PROBE_LOWER_LIMIT) && (v <= PROBE_UPPER_LIMIT) => Ok ( SensorReading(v) ),
@@ -128,14 +132,14 @@ impl ProbeSlope {
 
             let acid_end = if let Some(acid_str) = split.next() {
                 f64::from_str(acid_str)
-                    .chain_err(|| ErrorKind::ResponseParse)?
+                    .context(ErrorKind::ResponseParse)?
             } else {
                 return Err(ErrorKind::ResponseParse.into());
             };
 
             let base_end = if let Some(base_str) = split.next() {
                 f64::from_str(base_str)
-                    .chain_err(|| ErrorKind::ResponseParse)?
+                    .context(ErrorKind::ResponseParse)?
             } else {
                 return Err(ErrorKind::ResponseParse.into());
             };
@@ -173,7 +177,7 @@ impl CompensationValue {
     pub fn parse(response: &str) -> Result<CompensationValue> {
         if response.starts_with("?T,") {
             let rest = response.get(3..).unwrap();
-            let val = f64::from_str(rest).chain_err(|| ErrorKind::ResponseParse)?;
+            let val = f64::from_str(rest).context(ErrorKind::ResponseParse)?;
             Ok ( CompensationValue(val) )
         } else {
             Err(ErrorKind::ResponseParse.into())
