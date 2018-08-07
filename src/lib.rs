@@ -4,14 +4,10 @@
 #![feature(str_checked_slicing)]
 #![feature(exclusive_range_pattern)]
 
-#[macro_use]
 extern crate failure;
 #[macro_use]
 extern crate ezo_common;
 extern crate i2cdev;
-
-// Use error-chain.
-pub mod errors;
 
 /// Issuable commands for the PH EZO Chip.
 pub mod command;
