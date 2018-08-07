@@ -5,8 +5,8 @@ use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 
-use errors::ErrorKind;
-use failure::{Error, ResultExt};
+use ezo_common::errors::{ErrorKind, EzoError};
+use failure::{ResultExt};
 
 use response::{
     CalibrationStatus,
@@ -33,7 +33,7 @@ pub const MAX_DATA: usize = 401;
 pub use ezo_common::Command;
 pub use ezo_common::command::*;
 
-pub type Result<T> = result::Result<T, Error>;
+pub type Result<T> = result::Result<T, EzoError>;
 
 define_command! {
     doc: "`CAL,MID,t` command, where `t` is of type `f64`.",
@@ -41,7 +41,7 @@ define_command! {
 }
 
 impl FromStr for CalibrationMid {
-    type Err = Error;
+    type Err = EzoError;
 
     fn from_str(s: &str) -> Result<Self> {
         let supper = s.to_uppercase();
@@ -53,14 +53,14 @@ impl FromStr for CalibrationMid {
                     n.parse::<f64>()
                         .context(ErrorKind::CommandParse)?
                 }
-                _ => bail!(ErrorKind::CommandParse),
+                _ => return Err(ErrorKind::CommandParse)?,
             };
             match split.next() {
                 None => return Ok(CalibrationMid(value)),
-                _ => bail!(ErrorKind::CommandParse),
+                _ => return Err(ErrorKind::CommandParse)?,
             }
         } else {
-            bail!(ErrorKind::CommandParse);
+            return Err(ErrorKind::CommandParse)?;
         }
     }
 }
@@ -71,7 +71,7 @@ define_command! {
 }
 
 impl FromStr for CalibrationLow {
-    type Err = Error;
+    type Err = EzoError;
 
     fn from_str(s: &str) -> Result<Self> {
         let supper = s.to_uppercase();
@@ -83,14 +83,14 @@ impl FromStr for CalibrationLow {
                     n.parse::<f64>()
                         .context(ErrorKind::CommandParse)?
                 }
-                _ => bail!(ErrorKind::CommandParse),
+                _ => return Err(ErrorKind::CommandParse)?,
             };
             match split.next() {
                 None => return Ok(CalibrationLow(value)),
-                _ => bail!(ErrorKind::CommandParse),
+                _ => return Err(ErrorKind::CommandParse)?,
             }
         } else {
-            bail!(ErrorKind::CommandParse);
+            return Err(ErrorKind::CommandParse)?;
         }
     }
 }
@@ -101,7 +101,7 @@ define_command! {
 }
 
 impl FromStr for CalibrationHigh {
-    type Err = Error;
+    type Err = EzoError;
 
     fn from_str(s: &str) -> Result<Self> {
         let supper = s.to_uppercase();
@@ -113,14 +113,14 @@ impl FromStr for CalibrationHigh {
                     n.parse::<f64>()
                         .context(ErrorKind::CommandParse)?
                 }
-                _ => bail!(ErrorKind::CommandParse),
+                _ => return Err(ErrorKind::CommandParse)?,
             };
             match split.next() {
                 None => return Ok(CalibrationHigh(value)),
-                _ => bail!(ErrorKind::CommandParse),
+                _ => return Err(ErrorKind::CommandParse)?,
             }
         } else {
-            bail!(ErrorKind::CommandParse);
+            return Err(ErrorKind::CommandParse)?;
         }
     }
 }
@@ -132,13 +132,13 @@ define_command! {
 }
 
 impl FromStr for CalibrationState {
-    type Err = Error;
+    type Err = EzoError;
 
     fn from_str(s: &str) -> Result<Self> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "CAL,?" => Ok(CalibrationState),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -150,13 +150,13 @@ define_command! {
 }
 
 impl FromStr for Reading {
-    type Err = Error;
+    type Err = EzoError;
 
     fn from_str(s: &str) -> Result<Self> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "R" => Ok(Reading),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -168,13 +168,13 @@ define_command! {
 }
 
 impl FromStr for Slope {
-    type Err = Error;
+    type Err = EzoError;
 
     fn from_str(s: &str) -> Result<Self> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "SLOPE,?" => Ok(Slope),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }
@@ -185,7 +185,7 @@ define_command! {
 }
 
 impl FromStr for TemperatureCompensation {
-    type Err = Error;
+    type Err = EzoError;
 
     fn from_str(s: &str) -> Result<Self> {
         let supper = s.to_uppercase();
@@ -197,14 +197,14 @@ impl FromStr for TemperatureCompensation {
                     n.parse::<f64>()
                         .context(ErrorKind::CommandParse)?
                 }
-                _ => bail!(ErrorKind::CommandParse),
+                _ => return Err(ErrorKind::CommandParse)?,
             };
             match split.next() {
                 None => return Ok(TemperatureCompensation(value)),
-                _ => bail!(ErrorKind::CommandParse),
+                _ => return Err(ErrorKind::CommandParse)?,
             }
         } else {
-            bail!(ErrorKind::CommandParse);
+            return Err(ErrorKind::CommandParse)?;
         }
     }
 }
@@ -216,13 +216,13 @@ define_command! {
 }
 
 impl FromStr for CompensatedTemperatureValue {
-    type Err = Error;
+    type Err = EzoError;
 
     fn from_str(s: &str) -> Result<Self> {
         let supper = s.to_uppercase();
         match supper.as_ref() {
             "T,?" => Ok(CompensatedTemperatureValue),
-            _ => bail!(ErrorKind::CommandParse),
+            _ => Err(ErrorKind::CommandParse)?,
         }
     }
 }

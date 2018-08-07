@@ -5,8 +5,8 @@ use std::result;
 use std::fmt;
 use std::str::FromStr;
 
-use errors::ErrorKind;
-use failure::{Error, ResultExt};
+use ezo_common::errors::{ErrorKind, EzoError};
+use failure::{ResultExt};
 
 pub use ezo_common::response::{
     DeviceInfo,
@@ -25,7 +25,7 @@ pub const PROBE_LOWER_LIMIT: f64 = 0.0;
 /// Maximum possible pH reading, per pH probe data sheet.
 pub const PROBE_UPPER_LIMIT: f64 = 14.0;
 
-pub type Result<T> = result::Result<T, Error>;
+pub type Result<T> = result::Result<T, EzoError>;
 
 /// Calibration status of the PH EZO chip.
 #[derive(Copy, Clone, PartialEq)]
