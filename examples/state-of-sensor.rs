@@ -45,11 +45,10 @@ fn run() -> Result<(), Error> {
 
 fn main() {
     if let Err(ref e) = run() {
-        println!("error: {}", e);
+        println!("error cause: {}", e.as_fail());
         // The backtrace is not always generated. Try to run this example
         // with `RUST_BACKTRACE=1`.
-        let backtrace = e.backtrace();
-        println!("backtrace: {:?}", backtrace);
+        println!("backtrace: {:?}", e.backtrace());
         ::std::process::exit(1);
     }
 }
