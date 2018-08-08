@@ -3,13 +3,13 @@ use std::str::FromStr;
 use std::thread;
 use std::time::Duration;
 
-use failure::ResultExt;
-
+use super::response::{CalibrationStatus, CompensationValue, ProbeSlope, SensorReading};
 use super::{ErrorKind, EzoError};
-use response::{CalibrationStatus, CompensationValue, ProbeSlope, SensorReading};
 
 use ezo_common::response::ResponseStatus;
 use ezo_common::{response_code, string_from_response_data, write_to_ezo, ResponseCode};
+
+use failure::ResultExt;
 
 use i2cdev::core::I2CDevice;
 use i2cdev::linux::LinuxI2CDevice;

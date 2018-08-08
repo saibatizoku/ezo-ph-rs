@@ -18,7 +18,6 @@ pub const PROBE_LOWER_LIMIT: f64 = 0.0;
 /// Maximum possible pH reading, per pH probe data sheet.
 pub const PROBE_UPPER_LIMIT: f64 = 14.0;
 
-
 /// Calibration status of the PH EZO chip.
 #[derive(Copy, Clone, PartialEq)]
 pub enum CalibrationStatus {
