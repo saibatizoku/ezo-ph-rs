@@ -5,8 +5,10 @@ extern crate failure;
 extern crate i2cdev;
 
 use ezo_ph::{
-    command::{Command, DeviceInformation, CalibrationState, LedState, Reading, Slope, Sleep, Status},
-    response::{CalibrationStatus, DeviceInfo, DeviceStatus, LedStatus, SensorReading, ProbeSlope},
+    command::{
+        CalibrationState, Command, DeviceInformation, LedState, Reading, Sleep, Slope, Status,
+    },
+    response::{CalibrationStatus, DeviceInfo, DeviceStatus, LedStatus, ProbeSlope, SensorReading},
 };
 use failure::{Error, ResultExt};
 use i2cdev::linux::LinuxI2CDevice;
@@ -16,8 +18,8 @@ const EZO_SENSOR_ADDR: u16 = 99; // could be specified as 0x63
 
 fn run() -> Result<(), Error> {
     let device_path = format!("/dev/i2c-{}", I2C_BUS_ID);
-    let mut dev = LinuxI2CDevice::new(&device_path, EZO_SENSOR_ADDR)
-        .context("Could not open I2C device")?;
+    let mut dev =
+        LinuxI2CDevice::new(&device_path, EZO_SENSOR_ADDR).context("Could not open I2C device")?;
 
     let info: DeviceInfo = DeviceInformation.run(&mut dev)?;
     println!("{:?}", info);

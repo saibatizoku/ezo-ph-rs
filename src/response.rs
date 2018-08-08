@@ -1,22 +1,15 @@
 //! Parses I2C responses from the PH EZO Chip.
 //!
 //! Code modified from "Federico Mena Quintero <federico@gnome.org>"'s original.
-use std::result;
 use std::fmt;
 use std::str::FromStr;
 
-use ezo_common::errors::{ErrorKind, EzoError};
-use failure::{ResultExt};
+use super::{ErrorKind, EzoError};
+use failure::ResultExt;
 
 pub use ezo_common::response::{
-    DeviceInfo,
-    DeviceStatus,
-    Exported,
-    ExportedInfo,
-    LedStatus,
-    ResponseStatus,
-    RestartReason,
-    ProtocolLockStatus,
+    DeviceInfo, DeviceStatus, Exported, ExportedInfo, LedStatus, ProtocolLockStatus,
+    ResponseStatus, RestartReason,
 };
 
 /// Minimum possible pH reading, per pH probe data sheet.
@@ -25,7 +18,6 @@ pub const PROBE_LOWER_LIMIT: f64 = 0.0;
 /// Maximum possible pH reading, per pH probe data sheet.
 pub const PROBE_UPPER_LIMIT: f64 = 14.0;
 
-pub type Result<T> = result::Result<T, EzoError>;
 
 /// Calibration status of the PH EZO chip.
 #[derive(Copy, Clone, PartialEq)]
@@ -39,7 +31,7 @@ pub enum CalibrationStatus {
 impl CalibrationStatus {
     /// Parses the result of the "Cal,?" command to query the device's
     /// calibration status.  Returns ...
-    pub fn parse(response: &str) -> Result<CalibrationStatus> {
+    pub fn parse(response: &str) -> Result<CalibrationStatus, EzoError> {
         if response.starts_with("?CAL,") {
             let rest = response.get(5..).unwrap();
             let mut split = rest.split(',');
@@ -92,13 +84,13 @@ impl SensorReading {
     /// Parses the result of the "R" command to get a temperature reading.
     /// Note that the returned value has no known units. It is your
     /// responsibility to know the current `TemperatureScale` setting.
-    pub fn parse(response: &str) -> Result<SensorReading> {
+    pub fn parse(response: &str) -> Result<SensorReading, EzoError> {
         let val = f64::from_str(response).context(ErrorKind::ResponseParse)?;
 
         match val {
-            v if (v >= PROBE_LOWER_LIMIT) && (v <= PROBE_UPPER_LIMIT) => Ok ( SensorReading(v) ),
+            v if (v >= PROBE_LOWER_LIMIT) && (v <= PROBE_UPPER_LIMIT) => Ok(SensorReading(v)),
 
-            _ => Err ( ErrorKind::InvalidReading.into() ),
+            _ => Err(ErrorKind::InvalidReading.into()),
         }
     }
 }
@@ -124,22 +116,20 @@ pub struct ProbeSlope {
 
 impl ProbeSlope {
     /// Parses the result of the "Slope,?" command to get the device's status.
-    pub fn parse(response: &str) -> Result<ProbeSlope> {
+    pub fn parse(response: &str) -> Result<ProbeSlope, EzoError> {
         if response.starts_with("?SLOPE,") {
             let num_str = response.get(7..).unwrap();
 
             let mut split = num_str.split(",");
 
             let acid_end = if let Some(acid_str) = split.next() {
-                f64::from_str(acid_str)
-                    .context(ErrorKind::ResponseParse)?
+                f64::from_str(acid_str).context(ErrorKind::ResponseParse)?
             } else {
                 return Err(ErrorKind::ResponseParse.into());
             };
 
             let base_end = if let Some(base_str) = split.next() {
-                f64::from_str(base_str)
-                    .context(ErrorKind::ResponseParse)?
+                f64::from_str(base_str).context(ErrorKind::ResponseParse)?
             } else {
                 return Err(ErrorKind::ResponseParse.into());
             };
@@ -148,7 +138,7 @@ impl ProbeSlope {
                 return Err(ErrorKind::ResponseParse.into());
             }
 
-            Ok ( ProbeSlope { acid_end, base_end } )
+            Ok(ProbeSlope { acid_end, base_end })
         } else {
             Err(ErrorKind::ResponseParse.into())
         }
@@ -174,11 +164,11 @@ pub struct CompensationValue(pub f64);
 impl CompensationValue {
     /// Parses the result of the "T,?" command to get the device's
     /// temperature compensation value.
-    pub fn parse(response: &str) -> Result<CompensationValue> {
+    pub fn parse(response: &str) -> Result<CompensationValue, EzoError> {
         if response.starts_with("?T,") {
             let rest = response.get(3..).unwrap();
             let val = f64::from_str(rest).context(ErrorKind::ResponseParse)?;
-            Ok ( CompensationValue(val) )
+            Ok(CompensationValue(val))
         } else {
             Err(ErrorKind::ResponseParse.into())
         }
@@ -204,20 +194,28 @@ mod tests {
     #[test]
     fn parses_calibration_status() {
         let response = "?CAL,1";
-        assert_eq!(CalibrationStatus::parse(&response).unwrap(),
-                   CalibrationStatus::OnePoint);
+        assert_eq!(
+            CalibrationStatus::parse(&response).unwrap(),
+            CalibrationStatus::OnePoint
+        );
 
         let response = "?CAL,2";
-        assert_eq!(CalibrationStatus::parse(&response).unwrap(),
-                   CalibrationStatus::TwoPoint);
+        assert_eq!(
+            CalibrationStatus::parse(&response).unwrap(),
+            CalibrationStatus::TwoPoint
+        );
 
         let response = "?CAL,3";
-        assert_eq!(CalibrationStatus::parse(&response).unwrap(),
-                   CalibrationStatus::ThreePoint);
+        assert_eq!(
+            CalibrationStatus::parse(&response).unwrap(),
+            CalibrationStatus::ThreePoint
+        );
 
         let response = "?CAL,0";
-        assert_eq!(CalibrationStatus::parse(&response).unwrap(),
-                   CalibrationStatus::NotCalibrated);
+        assert_eq!(
+            CalibrationStatus::parse(&response).unwrap(),
+            CalibrationStatus::NotCalibrated
+        );
     }
 
     #[test]
@@ -247,16 +245,19 @@ mod tests {
     #[test]
     fn parses_sensor_reading() {
         let response = "0";
-        assert_eq!(SensorReading::parse(response).unwrap(),
-                   SensorReading(0.00));
+        assert_eq!(SensorReading::parse(response).unwrap(), SensorReading(0.00));
 
         let response = "12.5";
-        assert_eq!(SensorReading::parse(response).unwrap(),
-                   SensorReading(12.50));
+        assert_eq!(
+            SensorReading::parse(response).unwrap(),
+            SensorReading(12.50)
+        );
 
         let response = "14.0";
-        assert_eq!(SensorReading::parse(response).unwrap(),
-                   SensorReading(14.00));
+        assert_eq!(
+            SensorReading::parse(response).unwrap(),
+            SensorReading(14.00)
+        );
     }
 
     #[test]
@@ -280,12 +281,22 @@ mod tests {
     #[test]
     fn parses_probe_slope() {
         let response = "?SLOPE,99.7,-100.3";
-        assert_eq!(ProbeSlope::parse(response).unwrap(),
-                   ProbeSlope { acid_end: 99.7, base_end: -100.3 });
+        assert_eq!(
+            ProbeSlope::parse(response).unwrap(),
+            ProbeSlope {
+                acid_end: 99.7,
+                base_end: -100.3
+            }
+        );
 
         let response = "?SLOPE,97,-99.3";
-        assert_eq!(ProbeSlope::parse(response).unwrap(),
-                   ProbeSlope { acid_end: 97.0, base_end: -99.3 });
+        assert_eq!(
+            ProbeSlope::parse(response).unwrap(),
+            ProbeSlope {
+                acid_end: 97.0,
+                base_end: -99.3
+            }
+        );
     }
 
     #[test]
@@ -306,8 +317,10 @@ mod tests {
     #[test]
     fn parses_temperature_compensation_value() {
         let response = "?T,14.56";
-        assert_eq!(CompensationValue::parse(response).unwrap(),
-                   CompensationValue(14.56));
+        assert_eq!(
+            CompensationValue::parse(response).unwrap(),
+            CompensationValue(14.56)
+        );
     }
 
     #[test]

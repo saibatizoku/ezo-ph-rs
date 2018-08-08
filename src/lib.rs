@@ -14,3 +14,6 @@ pub mod command;
 
 /// Parseable responses from the PH EZO Chip.
 pub mod response;
+
+// Re-export errors from ezo_common crate.
+pub use ezo_common::errors::{ErrorKind, EzoError};
