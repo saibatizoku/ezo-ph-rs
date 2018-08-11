@@ -1,9 +1,9 @@
 //! I2C Commands for pH EZO Chip, taken from their Datasheet.
 //! This chip is used for pH measurement. It features calibration, sleep mode,
 //! scale, etc.
-extern crate failure;
 #[macro_use]
 extern crate ezo_common;
+extern crate failure;
 extern crate i2cdev;
 
 /// Issuable commands for the PH EZO Chip.
